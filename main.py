@@ -34,7 +34,7 @@ def cleanup_column_names(df,rename_dict={},do_inplace=True):
 def dataCollection():
     # read csv
     df = pd.read_csv('epl.csv')
-    df = df.dropna(subset=['FTHG', 'FTAG'])
+    df = df.dropna(subset=['FTHG', 'FTAG', 'BWH', 'BWD', 'IWH', 'IWD', 'IWA', 'LBH'])
     df['YEAR'] = pd.to_datetime(df['Date']).map(lambda x: x.year)
     df['MONTH'] = pd.to_datetime(df['Date']).map(lambda x: x.month)
     df['DAY'] = pd.to_datetime(df['Date']).map(lambda x: x.day)
