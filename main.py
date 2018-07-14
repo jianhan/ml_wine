@@ -101,15 +101,14 @@ def featureEngineering(df):
 
     training_features = training_features.drop('hometeam', axis=1)
     training_features = training_features.drop('awayteam', axis=1)
-    return outcome_labels, training_features
+    return training_features, outcome_labels
 
 
 def splitDataset(df, outcome_labels):
-    print(df.head(3), outcome_labels.head(3))
-    exit(0)
     X_train, X_test, y_train, y_test = train_test_split(df, outcome_labels,
                                                         test_size=0.2,
-                                                        random_state=123)
+                                                        random_state=123,
+                                                        stratify=outcome_labels)
     sc = StandardScaler()
     X_train_std = sc.fit_transform(X_train)
     X_test_std = sc.transform(X_test)
@@ -141,51 +140,7 @@ def main():
     df, outcome_labels = featureEngineering(df)
     X_train, X_test, y_train, y_test = splitDataset(df, outcome_labels)
     logisticRegression(X_train, X_test, y_train, y_test)
-    print(X_train.head(3))
 
 
 if __name__ == '__main__':
     main()
-
-exit(0)
-
-'''Data Preparation'''
-
-"""Feature Extraction and Engineering"""
-
-# 4. Split data into training and test sets
-
-
-#####################################################################
-## SCALING
-
-
-# 5. Declare data preprocessing steps
-pipeline = make_pipeline(preprocessing.StandardScaler(),
-                         RandomForestRegressor(n_estimators=100))
-
-# 6. Declare hyperparameters to tune
-hyperparameters = {'randomforestregressor__max_features': ['auto', 'sqrt', 'log2'],
-                   'randomforestregressor__max_depth': [None, 5, 3, 1]}
-
-# 7. Tune model using cross-validation pipeline
-
-import numpy as np
-
-#
-# fit the model
-
-
-dct = DecisionTreeClassifier()
-dctModel = dct.fit(X_train, y_train.values.ravel())
-dctPred = dctModel.predict(X_test)
-print('Accuracy:', float(accuracy_score(y_test, dctPred)) * 100, '%')
-print('Classification Stats:')
-print(classification_report(y_test, dctPred))
-
-knc = KNeighborsClassifier()
-kncModel = knc.fit(X_train, y_train.values.ravel())
-kncPred = kncModel.predict(X_test)
-print('Accuracy:', float(accuracy_score(y_test, kncPred)) * 100, '%')
-print('Classification Stats:')
-print(classification_report(y_test, kncPred))
