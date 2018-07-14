@@ -29,7 +29,7 @@ ss.fit(training_features[numeric_feature_names])
 
 # scale numeric features now
 training_features[numeric_feature_names] = ss.transform(training_features[numeric_feature_names])
-training_features = pd.get_dummies(training_features,columns=categoricial_feature_names)
+training_features = pd.get_dummies(training_features, columns=categoricial_feature_names)
 
 # get list of new categorical features
 categorical_engineered_features = list(set(training_features.columns) - set(numeric_feature_names))
@@ -39,6 +39,7 @@ categorical_engineered_features = list(set(training_features.columns) - set(nume
 regression algorithm"""
 from sklearn.linear_model import LogisticRegression
 import numpy as np
+
 # fit the model
 lr = LogisticRegression()
 model = lr.fit(training_features, np.array(outcome_labels['FTR']))
@@ -51,6 +52,19 @@ actual_labels = np.array(outcome_labels['FTR'])
 # evaluate model performance
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
-print('Accuracy:', float(accuracy_score(actual_labels,pred_labels))*100, '%')
+
+print('Accuracy:', float(accuracy_score(actual_labels, pred_labels)) * 100, '%')
 print('Classification Stats:')
 print(classification_report(actual_labels, pred_labels))
+
+'''Model Deployment'''
+from sklearn.externals import joblib
+import os
+
+# save models to be deployed on your server
+if not os.path.exists('Model'):
+    os.mkdir('Model')
+if not os.path.exists('Scaler'):
+    os.mkdir('Scaler')
+joblib.dump(model, r'Model/model.pickle')
+joblib.dump(ss, r'Scaler/scaler.pickle')
