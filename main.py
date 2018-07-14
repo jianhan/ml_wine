@@ -5,7 +5,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 '''Data Retrieva'''
 # read csv
-df = pd.read_csv('E0.csv')
+df = pd.read_csv('epl.csv')
 df = df.dropna(subset=['FTHG', 'FTAG'])
 df['YEAR'] = pd.to_datetime(df['Date']).map(lambda x: x.year)
 df['MONTH'] = pd.to_datetime(df['Date']).map(lambda x: x.month)
@@ -56,10 +56,9 @@ actual_labels = np.array(outcome_labels['FTR'])
 # evaluate model performance
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
-
-# print('Accuracy:', float(accuracy_score(actual_labels, pred_labels)) * 100, '%')
-# print('Classification Stats:')
-# print(classification_report(actual_labels, pred_labels))
+print('Accuracy:', float(accuracy_score(actual_labels, pred_labels)) * 100, '%')
+print('Classification Stats:')
+print(classification_report(actual_labels, pred_labels))
 
 '''Model Deployment'''
 from sklearn.externals import joblib
