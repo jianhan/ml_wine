@@ -7,20 +7,21 @@ pd.options.mode.chained_assignment = None  # default='warn'
 # read csv
 df = pd.read_csv('E0.csv')
 df = df.dropna(subset=['FTHG', 'FTAG'])
-df['Date'] = pd.to_datetime(df['Date'])
-df['DATE_DELTA'] = (df['Date'] - df['Date'].min()) / np.timedelta64(1, 'D')
+df['YEAR'] = pd.to_datetime(df['Date']).map(lambda x: x.year)
+df['MONTH'] = pd.to_datetime(df['Date']).map(lambda x: x.month)
+df['DAY'] = pd.to_datetime(df['Date']).map(lambda x: x.day)
 
 '''Data Preparation'''
 
 """Feature Extraction and Engineering"""
-feature_names = ['DATE_DELTA', 'HomeTeam', 'AwayTeam', 'B365H', 'B365D', 'B365A']
+feature_names = ['YEAR','MONTH', 'DAY', 'HomeTeam', 'AwayTeam', 'B365H', 'B365D', 'B365A']
 training_features = df[feature_names]
 outcome_name = ['FTR']
 outcome_labels = df[outcome_name]
 
 """Now that we have extracted our initial available features from the data and their corresponding outcome
 labels, let’s separate out our available features based on their type (numerical and categorical)"""
-numeric_feature_names = ['DATE_DELTA', 'B365H', 'B365D', 'B365A']
+numeric_feature_names = ['YEAR','MONTH', 'DAY', 'B365H', 'B365D', 'B365A']
 categoricial_feature_names = ['HomeTeam', 'AwayTeam']
 
 """We will now use a standard scalar from scikit-learn to scale or normalize our two numeric scorebased attributes """
@@ -80,7 +81,7 @@ scaler = joblib.load(r'Scaler/scaler.pickle')
 
 ## data retrieval
 new_data = pd.DataFrame(
-    [{'DATE_DELTA': '300', 'HomeTeam': 'Man United', 'AwayTeam': 'Leicester', 'B365H': 1.36, 'B365D': 4.5, 'B365A': 9}])
+    [{'YEAR': "2018", 'MONTH': '08', 'DAY': '11', 'HomeTeam': 'Man United', 'AwayTeam': 'Leicester', 'B365H': 1.36, 'B365D': 4.5, 'B365A': 9}])
 
 ## We will now carry out the tasks relevant to data preparation—feature extraction, engineering, and scaling
 ## data preparation
