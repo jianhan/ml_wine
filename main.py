@@ -16,7 +16,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 import matplotlib.pyplot as plt
 
-def cleanup_column_names(df,rename_dict={},do_inplace=True):
+
+def cleanup_column_names(df, rename_dict={}, do_inplace=True):
     """This function renames columns of a pandas dataframe
     It converts column names to snake case if rename_dict is not passed.
     Args:
@@ -27,10 +28,11 @@ def cleanup_column_names(df,rename_dict={},do_inplace=True):
     pandas dataframe if do_inplace is set to False, None otherwise
     """
     if not rename_dict:
-        return df.rename(columns={col: col.lower().replace(' ','_')
-        for col in df.columns.values.tolist()},inplace=do_inplace)
+        return df.rename(columns={col: col.lower().replace(' ', '_')
+                                  for col in df.columns.values.tolist()}, inplace=do_inplace)
     else:
-        return df.rename(columns=rename_dict,inplace=do_inplace)
+        return df.rename(columns=rename_dict, inplace=do_inplace)
+
 
 def collection():
     # read csv
@@ -53,9 +55,11 @@ def collection():
     print(df.describe())
     return df
 
+
 def visulization(df):
     # TODO: get some useful graph up
     pass
+
 
 def featureEngineering(df):
     feature_names = ['year', 'month', 'day', 'hometeam', 'awayteam', 'b365h', 'b365d', 'b365a']
@@ -70,7 +74,8 @@ def featureEngineering(df):
     home_team_mappings = {index: label for index, label in enumerate(gle.classes_)}
     print(home_team_mappings)
     training_features['home_team_label'] = home_team_labels
-    training_features[['year', 'month', 'day', 'b365h', 'b365d', 'b365a', 'home_team_label']].iloc[1:len(training_features)]
+    training_features[['year', 'month', 'day', 'b365h', 'b365d', 'b365a', 'home_team_label']].iloc[
+    1:len(training_features)]
 
     # Away team
     away_team_labels = gle.fit_transform(training_features['awayteam'])
@@ -82,32 +87,35 @@ def featureEngineering(df):
     print(away_team_mappings)
     training_features = training_features.drop('hometeam', axis=1)
     training_features = training_features.drop('awayteam', axis=1)
-    return training_features
+    return outcome_labels, training_features
+
+
+def splitDataset(df, outcome_labels):
+    X_train, X_test, y_train, y_test = train_test_split(df, outcome_labels,
+                                                        test_size=0.2,
+                                                        random_state=123)
+    return X_train, X_test, y_train, y_test
+
 
 def main():
     df = collection()
     visulization(df)
-    df = featureEngineering(df)
-    print(df.head(3))
+    df, outcome_labels = featureEngineering(df)
+    X_train, X_test, y_train, y_test = splitDataset(df, outcome_labels)
+    print(X_train.head(3))
+
 
 if __name__ == '__main__':
     main()
 
 exit(0)
 
-
 '''Data Preparation'''
 
 """Feature Extraction and Engineering"""
 
-
 # 4. Split data into training and test sets
 
-
-X_train, X_test, y_train, y_test = train_test_split(training_features, outcome_labels,
-                                                    test_size=0.2,
-                                                    random_state=123,
-                                                    stratify=outcome_labels)
 
 #####################################################################
 ## SCALING
