@@ -14,6 +14,7 @@ from sklearn.metrics import classification_report
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
+import matplotlib.pyplot as plt
 
 def cleanup_column_names(df,rename_dict={},do_inplace=True):
     """This function renames columns of a pandas dataframe
@@ -31,7 +32,7 @@ def cleanup_column_names(df,rename_dict={},do_inplace=True):
     else:
         return df.rename(columns=rename_dict,inplace=do_inplace)
 
-def dataCollection():
+def collection():
     # read csv
     df = pd.read_csv('epl.csv')
     df = df.dropna(subset=['FTHG', 'FTAG', 'BWH', 'BWD', 'IWH', 'IWD', 'IWA', 'LBH'])
@@ -52,8 +53,42 @@ def dataCollection():
     print(df.describe())
     return df
 
+def visulization(df):
+    # TODO: get some useful graph up
+    pass
+
+def featureEngineering(df):
+    feature_names = ['year', 'month', 'day', 'hometeam', 'awayteam', 'b365h', 'b365d', 'b365a']
+    training_features = df[feature_names]
+    outcome_name = ['ftr']
+    outcome_labels = df[outcome_name]
+
+    gle = LabelEncoder()
+
+    # Home team
+    home_team_labels = gle.fit_transform(training_features['hometeam'])
+    home_team_mappings = {index: label for index, label in enumerate(gle.classes_)}
+    print(home_team_mappings)
+    training_features['home_team_label'] = home_team_labels
+    training_features[['year', 'month', 'day', 'b365h', 'b365d', 'b365a', 'home_team_label']].iloc[1:len(training_features)]
+
+    # Away team
+    away_team_labels = gle.fit_transform(training_features['awayteam'])
+    away_team_mappings = {index: label for index, label in enumerate(gle.classes_)}
+    training_features['away_team_label'] = away_team_labels
+    training_features[
+        ['year', 'month', 'day', 'b365h', 'b365d', 'b365a', 'home_team_label', 'away_team_label']].iloc[
+    1:len(training_features)]
+    print(away_team_mappings)
+    training_features = training_features.drop('hometeam', axis=1)
+    training_features = training_features.drop('awayteam', axis=1)
+    return training_features
+
 def main():
-    df = dataCollection()
+    df = collection()
+    visulization(df)
+    df = featureEngineering(df)
+    print(df.head(3))
 
 if __name__ == '__main__':
     main()
@@ -64,31 +99,7 @@ exit(0)
 '''Data Preparation'''
 
 """Feature Extraction and Engineering"""
-feature_names = ['YEAR', 'MONTH', 'DAY', 'HomeTeam', 'AwayTeam', 'B365H', 'B365D', 'B365A']
-training_features = df[feature_names]
-outcome_name = ['FTR']
-outcome_labels = df[outcome_name]
 
-gle = LabelEncoder()
-
-# Home team
-home_team_labels = gle.fit_transform(training_features['HomeTeam'])
-home_team_mappings = {index: label for index, label in enumerate(gle.classes_)}
-print(home_team_mappings)
-training_features['HomeTeamLabel'] = home_team_labels
-training_features[['YEAR', 'MONTH', 'DAY', 'B365H', 'B365D', 'B365A', 'HomeTeamLabel']].iloc[
-1:len(training_features)]
-
-# Away team
-away_team_labels = gle.fit_transform(training_features['AwayTeam'])
-away_team_mappings = {index: label for index, label in enumerate(gle.classes_)}
-training_features['AwayTeamLabel'] = away_team_labels
-training_features[
-    ['YEAR', 'MONTH', 'DAY', 'B365H', 'B365D', 'B365A', 'HomeTeamLabel', 'AwayTeamLabel']].iloc[
-1:len(training_features)]
-print(away_team_mappings)
-training_features = training_features.drop('HomeTeam', axis=1)
-training_features = training_features.drop('AwayTeam', axis=1)
 
 # 4. Split data into training and test sets
 
