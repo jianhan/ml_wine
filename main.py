@@ -34,6 +34,17 @@ def cleanup_column_names(df, rename_dict={}, do_inplace=True):
         return df.rename(columns=rename_dict, inplace=do_inplace)
 
 
+def format_result_type(r_type):
+    if r_type == "H":
+        return 1
+    elif r_type == "D":
+        return 2
+    elif r_type == "A":
+        return 3
+    else:
+        return 'error'
+
+
 def collection():
     # read csv
     df = pd.read_csv('epl.csv')
@@ -41,6 +52,7 @@ def collection():
     df['YEAR'] = pd.to_datetime(df['Date']).map(lambda x: x.year)
     df['MONTH'] = pd.to_datetime(df['Date']).map(lambda x: x.month)
     df['DAY'] = pd.to_datetime(df['Date']).map(lambda x: x.day)
+    df['FTR_NUM'] = df['FTR'].map(format_result_type)
     cleanup_column_names(df)
     print("Number of rows::", df.shape[0])
     print("Number of columns::", df.shape[1])
@@ -64,7 +76,7 @@ def visulization(df):
 def featureEngineering(df):
     feature_names = ['year', 'month', 'day', 'hometeam', 'awayteam', 'b365h', 'b365d', 'b365a']
     training_features = df[feature_names]
-    outcome_name = ['ftr']
+    outcome_name = ['ftr_num']
     outcome_labels = df[outcome_name]
 
     gle = LabelEncoder()
@@ -73,6 +85,7 @@ def featureEngineering(df):
     home_team_labels = gle.fit_transform(training_features['hometeam'])
     home_team_mappings = {index: label for index, label in enumerate(gle.classes_)}
     print(home_team_mappings)
+
     training_features['home_team_label'] = home_team_labels
     training_features[['year', 'month', 'day', 'b365h', 'b365d', 'b365a', 'home_team_label']].iloc[
     1:len(training_features)]
@@ -85,16 +98,41 @@ def featureEngineering(df):
         ['year', 'month', 'day', 'b365h', 'b365d', 'b365a', 'home_team_label', 'away_team_label']].iloc[
     1:len(training_features)]
     print(away_team_mappings)
+
     training_features = training_features.drop('hometeam', axis=1)
     training_features = training_features.drop('awayteam', axis=1)
     return outcome_labels, training_features
 
 
 def splitDataset(df, outcome_labels):
+    print(df.head(3), outcome_labels.head(3))
+    exit(0)
     X_train, X_test, y_train, y_test = train_test_split(df, outcome_labels,
                                                         test_size=0.2,
                                                         random_state=123)
-    return X_train, X_test, y_train, y_test
+    sc = StandardScaler()
+    X_train_std = sc.fit_transform(X_train)
+    X_test_std = sc.transform(X_test)
+    return X_train_std, X_test_std, y_train, y_test
+
+
+def gaussianNB(X_train, X_test, y_train, y_test):
+    gnb = GaussianNB()
+    gnbModel = gnb.fit(X_train, y_train)
+    gnbPred = gnbModel.predict(X_test)
+    print('Accuracy:', float(accuracy_score(y_test, gnbPred)) * 100, '%')
+    print('Classification Stats:')
+    print(classification_report(y_test, gnbPred))
+
+
+def logisticRegression(X_train, X_test, y_train, y_test):
+    lr = LogisticRegression()
+    model = lr.fit(X_train, y_train)
+
+    pred = model.predict(X_test)
+    print('Accuracy:', float(accuracy_score(y_test, pred)) * 100, '%')
+    print('Classification Stats:')
+    print(classification_report(y_test, pred))
 
 
 def main():
@@ -102,6 +140,7 @@ def main():
     visulization(df)
     df, outcome_labels = featureEngineering(df)
     X_train, X_test, y_train, y_test = splitDataset(df, outcome_labels)
+    logisticRegression(X_train, X_test, y_train, y_test)
     print(X_train.head(3))
 
 
@@ -120,9 +159,6 @@ exit(0)
 #####################################################################
 ## SCALING
 
-sc = StandardScaler()
-X_train_std = sc.fit_transform(X_train)
-X_test_std = sc.transform(X_test)
 
 # 5. Declare data preprocessing steps
 pipeline = make_pipeline(preprocessing.StandardScaler(),
@@ -138,13 +174,7 @@ import numpy as np
 
 #
 # fit the model
-lr = LogisticRegression()
-model = lr.fit(X_train, y_train.values.ravel())
 
-pred = model.predict(X_test)
-print('Accuracy:', float(accuracy_score(y_test, pred)) * 100, '%')
-print('Classification Stats:')
-print(classification_report(y_test, pred))
 
 dct = DecisionTreeClassifier()
 dctModel = dct.fit(X_train, y_train.values.ravel())
@@ -159,10 +189,3 @@ kncPred = kncModel.predict(X_test)
 print('Accuracy:', float(accuracy_score(y_test, kncPred)) * 100, '%')
 print('Classification Stats:')
 print(classification_report(y_test, kncPred))
-
-gnb = GaussianNB()
-gnbModel = gnb.fit(X_train, y_train.values.ravel())
-gnbPred = gnbModel.predict(X_test)
-print('Accuracy:', float(accuracy_score(y_test, gnbPred)) * 100, '%')
-print('Classification Stats:')
-print(classification_report(y_test, gnbPred))
